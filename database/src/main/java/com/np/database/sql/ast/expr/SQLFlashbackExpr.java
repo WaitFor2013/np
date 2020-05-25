@@ -1,0 +1,90 @@
+
+package com.np.database.sql.ast.expr;
+
+import java.util.Collections;
+import java.util.List;
+
+import com.np.database.sql.ast.SQLExpr;
+import com.np.database.sql.ast.SQLExprImpl;
+import com.np.database.sql.ast.SQLObject;
+import com.np.database.sql.visitor.SQLASTVisitor;
+
+/**
+ * Created by wenshao on 14/06/2017.
+ */
+public class SQLFlashbackExpr extends SQLExprImpl {
+    private Type type;
+    private SQLExpr expr;
+
+    public SQLFlashbackExpr() {
+
+    }
+
+    public SQLFlashbackExpr(Type type, SQLExpr expr) {
+        this.type = type;
+        this.setExpr(expr);
+    }
+
+    public Type getType() {
+        return type;
+    }
+
+    public void setType(Type type) {
+        this.type = type;
+    }
+
+    public SQLExpr getExpr() {
+        return expr;
+    }
+
+    public void setExpr(SQLExpr expr) {
+        if (expr != null) {
+            expr.setParent(this);
+        }
+        this.expr = expr;
+    }
+
+    @Override
+    protected void accept0(SQLASTVisitor visitor) {
+        if (visitor.visit(this)) {
+            acceptChild(visitor, expr);
+        }
+        visitor.endVisit(this);
+    }
+
+    @Override
+    public List<SQLObject> getChildren() {
+        return Collections.<SQLObject>singletonList(expr);
+    }
+
+    public SQLFlashbackExpr clone() {
+        SQLFlashbackExpr x = new SQLFlashbackExpr();
+        x.type = this.type;
+        if (expr != null) {
+            x.setExpr(expr.clone());
+        }
+        return x;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        SQLFlashbackExpr that = (SQLFlashbackExpr) o;
+
+        if (type != that.type) return false;
+        return expr != null ? expr.equals(that.expr) : that.expr == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = type != null ? type.hashCode() : 0;
+        result = 31 * result + (expr != null ? expr.hashCode() : 0);
+        return result;
+    }
+
+    public static enum Type {
+        SCN, TIMESTAMP
+    }
+}

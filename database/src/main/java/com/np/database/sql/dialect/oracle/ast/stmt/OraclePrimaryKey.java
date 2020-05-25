@@ -1,0 +1,101 @@
+
+package com.np.database.sql.dialect.oracle.ast.stmt;
+
+import com.np.database.sql.ast.SQLName;
+import com.np.database.sql.ast.statement.SQLPrimaryKey;
+import com.np.database.sql.ast.statement.SQLPrimaryKeyImpl;
+import com.np.database.sql.ast.statement.SQLTableConstraint;
+import com.np.database.sql.ast.statement.SQLTableElement;
+import com.np.database.sql.dialect.oracle.visitor.OracleASTVisitor;
+import com.np.database.sql.visitor.SQLASTVisitor;
+import com.np.database.sql.ast.SQLName;
+import com.np.database.sql.ast.statement.SQLPrimaryKey;
+import com.np.database.sql.ast.statement.SQLPrimaryKeyImpl;
+import com.np.database.sql.ast.statement.SQLTableConstraint;
+import com.np.database.sql.ast.statement.SQLTableElement;
+import com.np.database.sql.dialect.oracle.visitor.OracleASTVisitor;
+import com.np.database.sql.visitor.SQLASTVisitor;
+
+public class OraclePrimaryKey extends SQLPrimaryKeyImpl implements OracleConstraint, SQLPrimaryKey, SQLTableElement, SQLTableConstraint {
+
+    private OracleUsingIndexClause using;
+    private SQLName exceptionsInto;
+    private Boolean                enable;
+    private Initially              initially;
+    private Boolean                deferrable;
+
+    @Override
+    protected void accept0(SQLASTVisitor visitor) {
+        this.accept0((OracleASTVisitor) visitor);
+    }
+
+    @Override
+    public void accept0(OracleASTVisitor visitor) {
+        if (visitor.visit(this)) {
+            acceptChild(visitor, name);
+            acceptChild(visitor, columns);
+            acceptChild(visitor, using);
+            acceptChild(visitor, exceptionsInto);
+        }
+        visitor.endVisit(this);
+    }
+
+    public Boolean getDeferrable() {
+        return deferrable;
+    }
+
+    public void setDeferrable(Boolean deferrable) {
+        this.deferrable = deferrable;
+    }
+
+    public OracleUsingIndexClause getUsing() {
+        return using;
+    }
+
+    public void setUsing(OracleUsingIndexClause using) {
+        this.using = using;
+    }
+
+    public SQLName getExceptionsInto() {
+        return exceptionsInto;
+    }
+
+    public void setExceptionsInto(SQLName exceptionsInto) {
+        this.exceptionsInto = exceptionsInto;
+    }
+
+    public Boolean getEnable() {
+        return enable;
+    }
+
+    public void setEnable(Boolean enable) {
+        this.enable = enable;
+    }
+
+    public Initially getInitially() {
+        return initially;
+    }
+
+    public void setInitially(Initially initially) {
+        this.initially = initially;
+    }
+
+    public void cloneTo(OraclePrimaryKey x) {
+        super.cloneTo(x);
+        if (using != null) {
+            x.setUsing(using.clone());
+        }
+        if (exceptionsInto != null) {
+            x.setExceptionsInto(exceptionsInto.clone());
+        }
+        x.enable = enable;
+        x.initially = initially;
+        x.deferrable = deferrable;
+    }
+
+    public OraclePrimaryKey clone() {
+        OraclePrimaryKey x = new OraclePrimaryKey();
+        cloneTo(x);
+        return x;
+    }
+}

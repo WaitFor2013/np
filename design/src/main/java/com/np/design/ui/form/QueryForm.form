@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.np.design.ui.form.QueryForm">
+  <grid id="27dc6" binding="queryPanel" layout-manager="GridLayoutManager" row-count="1" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+    <margin top="0" left="0" bottom="0" right="0"/>
+    <constraints>
+      <xy x="20" y="20" width="726" height="587"/>
+    </constraints>
+    <properties/>
+    <border type="none"/>
+    <children>
+      <splitpane id="eaa46">
+        <constraints>
+          <grid row="0" column="0" row-span="1" col-span="2" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false">
+            <preferred-size width="200" height="200"/>
+          </grid>
+        </constraints>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <grid id="9b9c2" binding="queryListJPanel" layout-manager="GridLayoutManager" row-count="3" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+            <margin top="0" left="0" bottom="0" right="0"/>
+            <constraints>
+              <splitpane position="left"/>
+            </constraints>
+            <properties/>
+            <border type="none" title="视图清单"/>
+            <children>
+              <toolbar id="25027">
+                <constraints>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false">
+                    <preferred-size width="-1" height="20"/>
+                  </grid>
+                </constraints>
+                <properties>
+                  <borderPainted value="false"/>
+                  <enabled value="false"/>
+                  <floatable value="false"/>
+                </properties>
+                <border type="empty"/>
+                <children>
+                  <component id="d28e1" class="javax.swing.JButton" binding="dbLoadBtn">
+                    <constraints/>
+                    <properties>
+                      <icon value="icon/analyze.png"/>
+                      <text value="读取DB"/>
+                    </properties>
+                  </component>
+                  <component id="80533" class="javax.swing.JButton" binding="addQueryBtn">
+                    <constraints/>
+                    <properties>
+                      <icon value="icon/add.png"/>
+                      <text value="新增"/>
+                    </properties>
+                  </component>
+                  <component id="45360" class="javax.swing.JButton" binding="deleteQueryBtn">
+                    <constraints/>
+                    <properties>
+                      <icon value="icon/remove.png"/>
+                      <text value="删除"/>
+                    </properties>
+                  </component>
+                  <component id="ab82b" class="javax.swing.JButton" binding="deployBtn">
+                    <constraints/>
+                    <properties>
+                      <icon value="icon/run.png"/>
+                      <text value="发布"/>
+                    </properties>
+                  </component>
+                  <component id="6e50f" class="javax.swing.JButton" binding="codeBtn">
+                    <constraints/>
+                    <properties>
+                      <icon value="icon/export.png"/>
+                      <text value="代码"/>
+                    </properties>
+                  </component>
+                </children>
+              </toolbar>
+              <scrollpane id="2b672">
+                <constraints>
+                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="a120e" class="javax.swing.JTable" binding="queryTable">
+                    <constraints/>
+                    <properties>
+                      <rowHeight value="30"/>
+                    </properties>
+                  </component>
+                </children>
+              </scrollpane>
+              <toolbar id="60cfd">
+                <constraints>
+                  <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false">
+                    <preferred-size width="-1" height="20"/>
+                  </grid>
+                </constraints>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="e35c2" class="javax.swing.JLabel" binding="moduleLabel">
+                    <constraints/>
+                    <properties>
+                      <icon value="icon/favorite.png"/>
+                      <text value="模块："/>
+                    </properties>
+                  </component>
+                  <component id="58542" class="javax.swing.JComboBox" binding="moduleComboBox">
+                    <constraints/>
+                    <properties>
+                      <maximumSize width="200" height="32767"/>
+                    </properties>
+                  </component>
+                </children>
+              </toolbar>
+            </children>
+          </grid>
+          <grid id="d4bb9" layout-manager="GridLayoutManager" row-count="2" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+            <margin top="0" left="0" bottom="0" right="0"/>
+            <constraints>
+              <splitpane position="right"/>
+            </constraints>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <splitpane id="fa27" binding="sqlSplitPane">
+                <constraints>
+                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false">
+                    <preferred-size width="200" height="200"/>
+                  </grid>
+                </constraints>
+                <properties>
+                  <continuousLayout value="false"/>
+                  <orientation value="0"/>
+                </properties>
+                <border type="none" title="视图明细"/>
+                <children>
+                  <scrollpane id="38ef6">
+                    <constraints>
+                      <splitpane position="right"/>
+                    </constraints>
+                    <properties>
+                      <horizontalScrollBarPolicy value="30"/>
+                    </properties>
+                    <border type="none" title="结果集"/>
+                    <children>
+                      <component id="8bb36" class="javax.swing.JTable" binding="resultTable">
+                        <constraints/>
+                        <properties>
+                          <rowHeight value="30"/>
+                        </properties>
+                      </component>
+                    </children>
+                  </scrollpane>
+                  <grid id="6a72b" binding="sqlJPanel" layout-manager="GridLayoutManager" row-count="2" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+                    <margin top="0" left="0" bottom="0" right="0"/>
+                    <constraints>
+                      <splitpane position="left"/>
+                    </constraints>
+                    <properties>
+                      <minimumSize width="111" height="300"/>
+                    </properties>
+                    <border type="none" title="SQL"/>
+                    <children>
+                      <scrollpane id="2b2bd">
+                        <constraints>
+                          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                        </constraints>
+                        <properties/>
+                        <border type="none"/>
+                        <children>
+                          <component id="7f64" class="javax.swing.JTextPane" binding="sqlTextPane">
+                            <constraints/>
+                            <properties>
+                              <minimumSize width="0" height="300"/>
+                            </properties>
+                          </component>
+                        </children>
+                      </scrollpane>
+                      <toolbar id="639c2">
+                        <constraints>
+                          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false">
+                            <preferred-size width="-1" height="20"/>
+                          </grid>
+                        </constraints>
+                        <properties>
+                          <borderPainted value="false"/>
+                          <enabled value="false"/>
+                          <floatable value="false"/>
+                        </properties>
+                        <border type="empty"/>
+                        <children>
+                          <component id="f2102" class="javax.swing.JButton" binding="sqlParseBtn">
+                            <constraints/>
+                            <properties>
+                              <icon value="icon/preview.png"/>
+                              <text value="SQL解析"/>
+                            </properties>
+                          </component>
+                          <component id="83e07" class="javax.swing.JButton" binding="previewBtn">
+                            <constraints/>
+                            <properties>
+                              <icon value="icon/find.png"/>
+                              <text value="预览"/>
+                            </properties>
+                          </component>
+                        </children>
+                      </toolbar>
+                    </children>
+                  </grid>
+                </children>
+              </splitpane>
+              <toolbar id="9ed7f">
+                <constraints>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false">
+                    <preferred-size width="-1" height="20"/>
+                  </grid>
+                </constraints>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="c7166" class="javax.swing.JLabel" binding="viewLabel">
+                    <constraints/>
+                    <properties>
+                      <text value="视图："/>
+                    </properties>
+                  </component>
+                  <component id="474c3" class="javax.swing.JLabel" binding="currentView">
+                    <constraints/>
+                    <properties>
+                      <text value=""/>
+                    </properties>
+                  </component>
+                </children>
+              </toolbar>
+            </children>
+          </grid>
+        </children>
+      </splitpane>
+    </children>
+  </grid>
+</form>

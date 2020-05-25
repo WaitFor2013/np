@@ -1,0 +1,126 @@
+
+package com.np.database.sql.ast.statement;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import com.np.database.sql.ast.SQLCommentHint;
+import com.np.database.sql.ast.SQLExpr;
+import com.np.database.sql.ast.SQLName;
+import com.np.database.sql.ast.SQLStatementImpl;
+import com.np.database.sql.ast.expr.SQLBinaryOpExpr;
+import com.np.database.sql.ast.expr.SQLBinaryOperator;
+import com.np.database.sql.ast.expr.SQLIntegerExpr;
+import com.np.database.sql.visitor.SQLASTVisitor;
+
+public class SQLSetStatement extends SQLStatementImpl {
+    private Option option;
+
+    private List<SQLAssignItem> items = new ArrayList<SQLAssignItem>();
+    
+    private List<SQLCommentHint> hints;
+
+    public SQLSetStatement(){
+    }
+    
+    public SQLSetStatement(String dbType){
+        super (dbType);
+    }
+    
+    public SQLSetStatement(SQLExpr target, SQLExpr value){
+        this(target, value, null);
+    }
+
+    public SQLSetStatement(SQLExpr target, SQLExpr value, String dbType){
+        super (dbType);
+        SQLAssignItem item = new SQLAssignItem(target, value);
+        item.setParent(this);
+        this.items.add(item);
+    }
+
+    public static SQLSetStatement plus(SQLName target) {
+        SQLExpr value = new SQLBinaryOpExpr(target.clone(), SQLBinaryOperator.Add, new SQLIntegerExpr(1));
+        return new SQLSetStatement(target, value);
+    }
+
+    public List<SQLAssignItem> getItems() {
+        return items;
+    }
+
+    public void setItems(List<SQLAssignItem> items) {
+        this.items = items;
+    }
+
+    public List<SQLCommentHint> getHints() {
+        return hints;
+    }
+
+    public void setHints(List<SQLCommentHint> hints) {
+        this.hints = hints;
+    }
+
+    public Option getOption() {
+        return option;
+    }
+
+    public void setOption(Option option) {
+        this.option = option;
+    }
+
+    public void set(SQLExpr target, SQLExpr value) {
+        SQLAssignItem assignItem = new SQLAssignItem(target, value);
+        assignItem.setParent(this);
+        this.items.add(assignItem);
+    }
+
+    @Override
+    protected void accept0(SQLASTVisitor visitor) {
+        if (visitor.visit(this)) {
+            acceptChild(visitor, this.items);
+            acceptChild(visitor, this.hints);
+        }
+        visitor.endVisit(this);
+    }
+
+    public void output(StringBuffer buf) {
+        buf.append("SET ");
+
+        for (int i = 0; i < items.size(); ++i) {
+            if (i != 0) {
+                buf.append(", ");
+            }
+
+            SQLAssignItem item = items.get(i);
+            item.output(buf);
+        }
+    }
+
+    public SQLSetStatement clone() {
+        SQLSetStatement x = new SQLSetStatement();
+        for (SQLAssignItem item : items) {
+            SQLAssignItem item2 = item.clone();
+            item2.setParent(x);
+            x.items.add(item2);
+        }
+        if (hints != null) {
+            for (SQLCommentHint hint : hints) {
+                SQLCommentHint h2 = hint.clone();
+                h2.setParent(x);
+                x.hints.add(h2);
+            }
+        }
+        return x;
+    }
+
+    public List getChildren() {
+        return this.items;
+    }
+
+    public static enum Option {
+        IDENTITY_INSERT,
+        PASSWORD, // mysql
+        GLOBAL,
+        SESSION,
+        LOCAL
+    }
+}
