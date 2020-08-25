@@ -18,6 +18,8 @@ public class BizProperty {
 
     private Object[] values;
 
+    private String[] hasColumns;
+
     //used for update
     private Boolean isIndex;
 }

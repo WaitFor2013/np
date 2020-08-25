@@ -65,7 +65,10 @@ public enum BizOperatorToken {
     IS_NOT_IN(" not in", "不在 之中"),
 
     //@>
-    ARRAY_CONTAINS(" @> ", "数组包含")
+    ARRAY_CONTAINS(" @> ", "数组包含"),
+
+    //&&
+    ARRAY_OVERLAP(" && ", "数组交叠")
 
     //自定义？
     ;

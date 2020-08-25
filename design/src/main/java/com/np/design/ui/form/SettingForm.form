@@ -221,14 +221,21 @@
             <constraints/>
             <properties>
               <icon value="icon/import.png"/>
-              <text value="环境同步"/>
+              <text value="导入"/>
+            </properties>
+          </component>
+          <component id="ef27e" class="javax.swing.JButton" binding="exportBtn">
+            <constraints/>
+            <properties>
+              <icon value="icon/export.png"/>
+              <text value="导出"/>
             </properties>
           </component>
           <component id="f935a" class="javax.swing.JButton" binding="schemaPoBtn">
             <constraints/>
             <properties>
-              <icon value="icon/export.png"/>
-              <text value="初始化代码生成"/>
+              <icon value="icon/favorite.png"/>
+              <text value="代码"/>
             </properties>
           </component>
         </children>

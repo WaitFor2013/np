@@ -21,10 +21,6 @@ import com.np.design.domain.db.SchemaColumn;
 import com.np.design.domain.db.SchemaParam;
 import com.np.design.domain.db.SchemaView;
 import com.np.design.exception.NpException;
-import com.np.design.NoRepeatApp;
-import com.np.design.domain.db.SchemaColumn;
-import com.np.design.domain.db.SchemaParam;
-import com.np.design.domain.db.SchemaView;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
@@ -383,6 +379,9 @@ public class ViewDesign {
                 if (null != sqlPropertyExpr.getOwnernName() && !sqlPropertyExpr.getOwnernName().isEmpty()) {
                     tempParam.setTablePrefix(sqlPropertyExpr.getOwnernName());
                     tempParam.setTableName(prefix$tableName.get(sqlPropertyExpr.getOwnernName()));
+                    if(!prefix$tableName.containsKey(sqlPropertyExpr.getOwnernName()) && null != sqlPropertyExpr.getResolvedTableSource()){
+                        tempParam.setTableName(sqlPropertyExpr.getResolvedTableSource().toString());
+                    }
                 } else {
                     if (tableName$prefix.size() != 1) {
                         throw new NpException("多张表关联查询必须有别名。");

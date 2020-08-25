@@ -53,6 +53,37 @@ public class BizParam {
         return property(column, BizOperatorToken.EQ, object);
     }
 
+
+    public BizParam hasEquals(Object object, ColumnDefinition... columnDefinitions) {
+        if (null == object || object.toString().isEmpty()) {
+            return this;
+        }
+
+        if (null == columnDefinitions || columnDefinitions.length == 0) {
+            return this;
+        }
+
+        if (columnDefinitions.length == 1) {
+            return equals(columnDefinitions[1], object);
+        }
+
+        String[] columns = new String[columnDefinitions.length];
+        for (int i = 0; i < columnDefinitions.length; i++) {
+            columns[i] = columnDefinitions[i].getColumnName();
+        }
+
+        BizProperty bizProperty = BizProperty.builder()
+                .column(columns[0])
+                .bizOperatorToken(BizOperatorToken.EQ)
+                .values(new Object[]{object})
+                .hasColumns(columns)
+                .build();
+
+        internalAdd(bizProperty);
+        return this;
+
+    }
+
     /**
      * 值不等于
      *
@@ -120,6 +151,35 @@ public class BizParam {
         return property(column, BizOperatorToken.LIKE, object);
     }
 
+    public BizParam hasLike(Object object, ColumnDefinition... columnDefinitions) {
+        if (null == object || object.toString().isEmpty()) {
+            return this;
+        }
+
+        if (null == columnDefinitions || columnDefinitions.length == 0) {
+            return this;
+        }
+
+        if (columnDefinitions.length == 1) {
+            return like(columnDefinitions[1], object);
+        }
+
+        String[] columns = new String[columnDefinitions.length];
+        for (int i = 0; i < columnDefinitions.length; i++) {
+            columns[i] = columnDefinitions[i].getColumnName();
+        }
+
+        BizProperty bizProperty = BizProperty.builder()
+                .column(columns[0])
+                .bizOperatorToken(BizOperatorToken.LIKE)
+                .values(new Object[]{object})
+                .hasColumns(columns)
+                .build();
+
+        internalAdd(bizProperty);
+        return this;
+    }
+
     /**
      * 值不包含
      *
@@ -152,6 +212,39 @@ public class BizParam {
                     .values(array)
                     .build());
         }
+        return this;
+    }
+
+    public BizParam hasBetween(Object from, Object to, ColumnDefinition... columnDefinitions) {
+
+        if (null != from && null != to) {
+            if (null == columnDefinitions || columnDefinitions.length == 0) {
+                return this;
+            }
+
+            if (columnDefinitions.length == 1) {
+                return between(columnDefinitions[1], from, to);
+            }
+
+            String[] columns = new String[columnDefinitions.length];
+            for (int i = 0; i < columnDefinitions.length; i++) {
+                columns[i] = columnDefinitions[i].getColumnName();
+            }
+
+            Object[] array = new Object[2];
+            array[0] = from;
+            array[1] = to;
+
+            internalAdd(BizProperty.builder()
+                    .column(columns[0])
+                    .bizOperatorToken(BizOperatorToken.IS_BETWEEN)
+                    .values(array)
+                    .hasColumns(columns)
+                    .build());
+
+
+        }
+
         return this;
     }
 
@@ -217,6 +310,13 @@ public class BizParam {
     public BizParam arrayContains(ColumnDefinition column, List<?> object) {
         if (null != object && !object.isEmpty()) {
             return property(column, BizOperatorToken.ARRAY_CONTAINS, object);
+        }
+        return this;
+    }
+
+    public BizParam arrayOverlap(ColumnDefinition column, List<?> object) {
+        if (null != object && !object.isEmpty()) {
+            return property(column, BizOperatorToken.ARRAY_OVERLAP, object);
         }
         return this;
     }

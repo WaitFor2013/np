@@ -14,11 +14,6 @@ import com.np.database.orm.mapping.ColumnMapping;
 import com.np.database.sql.PagerUtils;
 import com.np.database.sql.util.JdbcConstants;
 import com.np.database.sql.util.StringUtils;
-import com.np.database.orm.mapping.BoundSql;
-import com.np.database.orm.mapping.ColumnMapping;
-import com.np.database.sql.PagerUtils;
-import com.np.database.sql.util.JdbcConstants;
-import com.np.database.sql.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
@@ -80,8 +75,15 @@ public class PostgreSQLRender implements BizSqlRender {
                 switch (bizProperty.getBizOperatorToken()) {
                     case EQ:
                         checkValues(1, bizProperty, true);
-                        whereCauseSql.append(appendPrefix(parameterMapping));
-                        whereCauseSql.append(BLACK_SPACE).append("=").append(VALUE_HOLDER_SPACE);
+                        //支持多个列查询
+                        if (null != bizProperty.getHasColumns()) {
+                            hasColumnsDo(whereCauseSql,bizProperty,"=",allParams,queryParams,valueMap);
+                        } else {
+                            whereCauseSql.append(appendPrefix(parameterMapping));
+                            whereCauseSql.append(BLACK_SPACE).append("=").append(VALUE_HOLDER_SPACE);
+                        }
+
+
                         break;
                     case NEQ:
                         checkValues(1, bizProperty, true);
@@ -110,10 +112,15 @@ public class PostgreSQLRender implements BizSqlRender {
                         break;
                     case LIKE:
                         checkValues(1, bizProperty, true);
-                        whereCauseSql.append(appendPrefix(parameterMapping));
-                        whereCauseSql.append(BLACK_SPACE).append("like").append(VALUE_HOLDER_SPACE);
                         //value append with %value%
                         likeValueRender(bizProperty);
+
+                        if (null != bizProperty.getHasColumns()) {
+                            hasColumnsDo(whereCauseSql,bizProperty,"like",allParams,queryParams,valueMap);
+                        } else {
+                            whereCauseSql.append(appendPrefix(parameterMapping));
+                            whereCauseSql.append(BLACK_SPACE).append("like").append(VALUE_HOLDER_SPACE);
+                        }
                         break;
                     case NOT_LIKE:
                         checkValues(1, bizProperty, true);
@@ -124,8 +131,13 @@ public class PostgreSQLRender implements BizSqlRender {
                         break;
                     case IS_BETWEEN:
                         checkValues(2, bizProperty, true);
-                        whereCauseSql.append(appendPrefix(parameterMapping));
-                        whereCauseSql.append(BLACK_SPACE).append(" between").append(VALUE_HOLDER_SPACE).append(AND).append(VALUE_HOLDER_SPACE);
+
+                        if (null != bizProperty.getHasColumns()) {
+                            hasColumnsDo(whereCauseSql,bizProperty,"between",allParams,queryParams,valueMap);
+                        }else {
+                            whereCauseSql.append(appendPrefix(parameterMapping));
+                            whereCauseSql.append(BLACK_SPACE).append(" between").append(VALUE_HOLDER_SPACE).append(AND).append(VALUE_HOLDER_SPACE);
+                        }
                         break;
                     case IS_NOT_BETWEEN:
                         checkValues(2, bizProperty, true);
@@ -155,13 +167,22 @@ public class PostgreSQLRender implements BizSqlRender {
                                 .append(" @> ");
                         appendHolder(whereCauseSql, bizProperty);
                         break;
+                    case ARRAY_OVERLAP:
+                        checkValues(1, bizProperty, false);
+                        whereCauseSql.append(appendPrefix(parameterMapping))
+                                .append(BLACK_SPACE)
+                                .append(" && ");
+                        appendHolder(whereCauseSql, bizProperty);
+                        break;
 
                     default:
                         throw new NpDbException("unsupported OperatorToken " + bizProperty.getBizOperatorToken());
                 }
 
                 //param render
-                paramsRender(queryParams, valueMap, allParams.get(bizProperty.getColumn()), bizProperty.getValues());
+                if (null == bizProperty.getHasColumns()) {
+                    paramsRender(queryParams, valueMap, allParams.get(bizProperty.getColumn()), bizProperty.getValues());
+                }
 
                 isNeedAnd = true;
             }
@@ -243,6 +264,34 @@ public class PostgreSQLRender implements BizSqlRender {
 
 
         return new BoundSql(renderSql.toString(), queryParams, valueMap);
+    }
+
+    private void hasColumnsDo(StringBuilder whereCauseSql, BizProperty bizProperty,String operator,
+                              Map<String, ColumnMapping> allParams
+            , List<ColumnMapping> queryParams, Map<String, Object> valueMap) {
+        for (int i = 0; i < bizProperty.getHasColumns().length; i++) {
+            String hasColumn = bizProperty.getHasColumns()[i];
+            ColumnMapping hasParameterMapping = allParams.get(hasColumn);
+            if (null == hasParameterMapping) {
+                throw new NpDbException("parameter not set : " + hasColumn);
+            }
+            if (i == 0) {
+                whereCauseSql.append(" ( ");
+            } else {
+                whereCauseSql.append(OR);
+            }
+
+            whereCauseSql.append(appendPrefix(hasParameterMapping));
+
+            if("between".equals(operator)){
+                whereCauseSql.append(BLACK_SPACE).append(" between").append(VALUE_HOLDER_SPACE).append(AND).append(VALUE_HOLDER_SPACE);
+            }else {
+                whereCauseSql.append(BLACK_SPACE).append(operator).append(VALUE_HOLDER_SPACE);
+            }
+            paramsRender(queryParams, valueMap, hasParameterMapping, bizProperty.getValues());
+
+        }
+        whereCauseSql.append(" ) ");
     }
 
     @Override

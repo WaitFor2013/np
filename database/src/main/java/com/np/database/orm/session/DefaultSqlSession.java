@@ -18,10 +18,6 @@ import com.np.database.orm.executor.SimpleExecutor;
 import com.np.database.orm.mapping.*;
 import com.np.database.orm.type.JdbcType;
 import com.np.database.reflection.MetaObject;
-import com.np.database.orm.executor.Executor;
-import com.np.database.orm.executor.RowBounds;
-import com.np.database.orm.executor.SimpleExecutor;
-import com.np.database.orm.mapping.ColumnMapping;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.persistence.Column;
@@ -211,7 +207,8 @@ public class DefaultSqlSession implements SqlSession {
 
         Object idValue = metaObject.getValue(tableMeta.idColumn.getPojoProperty());
         if (null == idValue || idValue.toString().isEmpty()) {
-            throw new NpDbException("ID value can't be null.");
+            return null;
+            //throw new NpDbException("ID value can't be null.");
         }
 
         BizParam idParam = BizParam.NEW().index(ColumnDefinition.name(tableMeta.idColumn.getColumn()), idValue);

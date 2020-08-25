@@ -10,8 +10,6 @@ import com.np.design.NpConstants;
 import com.np.design.domain.vo.DatabaseVO;
 import com.np.design.exception.NpException;
 import com.np.design.ui.form.MainWindow;
-import com.np.design.domain.vo.DatabaseVO;
-import com.np.design.ui.form.MainWindow;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 
@@ -29,6 +27,7 @@ public class NpDataBaseCache {
     private final static String DATABASES_STORE = NpConstants.configHome + "databases.store";
 
     private static NpDatasource workDatabase;
+    public static String connectName;
 
     public static Object[][] getStoreDatabaseModel() {
 
@@ -68,6 +67,8 @@ public class NpDataBaseCache {
                     .build();
 
             workDatabase = new NpDatasource(dbConfig);
+            connectName = databaseVO.getConnectName();
+
             SqlSession session = workDatabase.getSession(true);
             JOptionPane.showMessageDialog(NoRepeatApp.mainFrame, "连接成功.", "提示",
                     JOptionPane.INFORMATION_MESSAGE);

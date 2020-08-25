@@ -1,17 +1,13 @@
 package com.np.design.ui.form;
 
-import com.alibaba.fastjson.JSON;
-import com.np.database.ColumnDefinition;
+import com.alibaba.fastjson.JSON;import com.np.database.ColumnDefinition;
 import com.np.database.NpDataType;
 import com.np.database.orm.NpDatasource;
-import com.np.database.orm.NpDbConfig;
-import com.np.database.orm.biz.DbTypeEnum;
 import com.np.database.orm.biz.param.BizParam;
-import com.np.database.orm.biz.param.Direction;
 import com.np.database.orm.session.DefaultSqlSession;
-import com.np.database.orm.session.SqlSession;
 import com.np.design.NoRepeatApp;
 import com.np.design.domain.NpDataBaseCache;
+import com.np.design.domain.SqlFile;
 import com.np.design.domain.code.generate.PoCodeGenerate;
 import com.np.design.domain.db.SchemaColumn;
 import com.np.design.domain.db.SchemaParam;
@@ -25,7 +21,8 @@ import com.np.design.domain.vo.DatabaseVO;
 import com.np.design.exception.ExceptionHandler;
 import com.np.design.exception.NpException;
 import com.np.design.ui.dialog.CommonTipsDialog;
-import com.np.design.domain.misc.GridField;
+import com.np.design.ui.dialog.SqlExportDialog;
+import com.np.design.ui.listener.NpComboBoxListener;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -40,6 +37,10 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -67,34 +68,39 @@ public class SettingForm {
     private JButton envInitBtn;
     private JButton schemaPoBtn;
     private JButton loadFromOtherBtn;
+    private JButton exportBtn;
 
     private static SettingForm settingForm;
 
     private void initEnv(NpDatasource datasource) {
-        DefaultSqlSession session = null;
+
+        DefaultSqlSession session = (DefaultSqlSession) datasource.getSession(false);
+
         try {
-            session = (DefaultSqlSession) datasource.getSession(false);
+
+            Statement statement = session.getConnection().createStatement();
 
             //check table
             BizParam tableQuery = BizParam.NEW()
                     .equals(ColumnDefinition.name("schemaname"), "public")
-                    .in(ColumnDefinition.name("tablename"), new Object[]{"schema_table", "schema_column"});
+                    .in(ColumnDefinition.name("tablename"), new Object[]{"schema_table", "schema_column", "schema_view", "schema_param"});
+
             List<PgTable> dbTables = session.queryAll(tableQuery, PgTable.class);
 
             if (null != dbTables) {
                 //如果表记录为空，删除表
                 for (PgTable pgTable : dbTables) {
-                    int count = 0;
-                    if ("schema_table".equals(pgTable.getTablename())) {
-                        count = session.count(BizParam.NEW(), SchemaTable.class);
+
+                    ResultSet resultSet = statement.executeQuery("select count(1) from " + pgTable.getTablename());
+
+                    if (null != resultSet && resultSet.next()) {
+                        int count = resultSet.getInt(1);
+                        if (count > 0) {
+                            throw new NpException("表：" + pgTable.getTablename() + "记录不为空，先自行备份表数据！！！");
+                        }
                     }
-                    if ("schema_column".equals(pgTable.getTablename())) {
-                        count = session.count(BizParam.NEW(), SchemaColumn.class);
-                    }
-                    if (count > 0) {
-                        throw new NpException("表：" + pgTable.getTablename() + "记录不为空，先自行备份表数据！！！");
-                    }
-                    session.executeDDL("drop table " + pgTable.getTablename());
+
+                    statement.execute("drop table " + pgTable.getTablename());
 
                     //删除表索引
                     BizParam indexQuery = BizParam.NEW()
@@ -104,7 +110,7 @@ public class SettingForm {
                     log.info("索引信息{}", JSON.toJSON(pgIndices));
                     if (null != pgIndices) {
                         for (PgIndex pgIndex : pgIndices) {
-                            session.executeDDL(" DROP INDEX " + pgIndex.getIndexname());
+                            statement.execute(" DROP INDEX " + pgIndex.getIndexname());
                         }
                     }
 
@@ -128,11 +134,22 @@ public class SettingForm {
                     , "schema_column", "table_name_column_name", "schema_column", "table_name,column_name");
             session.executeDDL(uqTableAndColumnIdx);
 
+
+            session.executeDDL(PostgresDDLHelper.generateCreateSQL(SchemaView.class));
+            session.executeDDL(String.format(" create unique index %s_idx_unq_%s on %s  using btree (%s)"
+                    , "schema_view", "schema_view_name", "schema_view", "view_name"));
+
+
+            session.executeDDL(PostgresDDLHelper.generateCreateSQL(SchemaParam.class));
+            session.executeDDL(String.format(" create unique index %s_idx_unq_%s on %s  using btree (%s)"
+                    , "schema_param", "schema_param_name", "schema_param", "view_name,table_name,column_name"));
+
             session.commit();
 
-        } catch (Exception ex) {
-            ExceptionHandler.handle(ex);
+        } catch (SQLException e) {
+            throw new NpException("执行失败", e);
         } finally {
+
             if (null != session) {
                 try {
                     session.close();
@@ -174,63 +191,95 @@ public class SettingForm {
         });
 
 
-        envInitBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                NpDatasource datasource = NpDataBaseCache.getDatasource();
-                initEnv(datasource);
-                JOptionPane.showMessageDialog(NoRepeatApp.mainFrame, datasource.getName() + "环境初始化成功.", "提示",
-                        JOptionPane.INFORMATION_MESSAGE);
+        envInitBtn.addActionListener(new NpComboBoxListener(() -> {
+
+            NpDatasource datasource = NpDataBaseCache.getDatasource();
+            initEnv(datasource);
+            JOptionPane.showMessageDialog(NoRepeatApp.mainFrame, datasource.getName() + "环境初始化成功.", "提示",
+                    JOptionPane.INFORMATION_MESSAGE);
+
+        }));
+
+        loadFromOtherBtn.addActionListener(new NpComboBoxListener(() -> {
+            NpDatasource datasource = NpDataBaseCache.getDatasource();
+
+            SqlExportDialog sqlExportDialog = SqlExportDialog.getInstance();
+            sqlExportDialog.setTitle("表定义导入");
+            sqlExportDialog.setVisible(true);
+
+            String filePath = sqlExportDialog.getFilePath();
+            if (null == filePath || filePath.isEmpty()) {
+                throw new NpException("输入目录不允许为空");
             }
-        });
 
-        loadFromOtherBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                NpDatasource datasource = NpDataBaseCache.getDatasource();
-                initEnv(datasource);
-                //选择环境
-                //从本地环境同步
-                NpDbConfig dbConfig = NpDbConfig.builder()
-                        .dbTypeEnum(DbTypeEnum.POSTGRESQL)
-                        .ip("127.0.0.1")
-                        .port(8432)
-                        .dbName("postgres")
-                        .user("postgres")
-                        .password("postgres")
-                        .build();
+            int result = JOptionPane.showConfirmDialog(NoRepeatApp.mainFrame,
+                    "数据库定义将被重置：【    " + datasource.getName() +
+                            "   】\n\n 核对数据库！！！\n 核对数据库！！！\n 核对数据库！！！\n 核对数据库！！！ \n 核对数据库！！！ \n 核对数据库！！！ \n 核对数据库！！！ \n 核对数据库！！！ \n\n" +
+                            "【  " + NpDataBaseCache.connectName + "    】定义将被重置。",
+                    "请确认",
+                    JOptionPane.YES_NO_OPTION);
 
-                NpDatasource localDatasource = new NpDatasource(dbConfig);
-                SqlSession localSession = localDatasource.getSession(true);
-
-                List<SchemaTable> schemaTables = localSession.queryAll(BizParam.NEW(), SchemaTable.class);
-                List<SchemaColumn> schemaColumns = localSession.queryAll(BizParam.NEW()
-                        .orderBy(ColumnDefinition.name("id"), Direction.ASC), SchemaColumn.class);
-
-                SqlSession otherSession = datasource.getSession(false);
-
-                for (int i = 0; i < schemaTables.size(); i++) {
-                    otherSession.create(schemaTables.get(i));
-                }
-
-                for (int i = 0; i < schemaColumns.size(); i++) {
-                    otherSession.create(schemaColumns.get(i));
-                }
-
-                try {
-                    localSession.close();
-                    otherSession.commit();
-                    otherSession.close();
-                } catch (Exception exs) {
-                    log.error("同步错误", exs);
-                }
-
-                JOptionPane.showMessageDialog(NoRepeatApp.mainFrame, datasource.getName() + "从本地同步到" + datasource.getName() + "成功", "提示",
-                        JOptionPane.INFORMATION_MESSAGE);
-
+            if (result != 0) {
+                throw new NpException("动作已取消");
             }
-        });
 
+            try (
+                    Connection connection = datasource.getDataSource().getConnection();
+                    Statement statement = connection.createStatement();
+            ) {
+
+                connection.setAutoCommit(false);
+
+                initData(statement, filePath, "schema_table");
+                initData(statement, filePath, "schema_column");
+                initData(statement, filePath, "schema_view");
+                initData(statement, filePath, "schema_param");
+
+                connection.commit();
+
+            } catch (Exception ex) {
+                throw new NpException("同步失败:" + ex.getMessage(), ex);
+            }
+
+            JOptionPane.showMessageDialog(NoRepeatApp.mainFrame, datasource.getName() + "：表定义同步成功", "提示",
+                    JOptionPane.INFORMATION_MESSAGE);
+
+        }));
+
+        exportBtn.addActionListener(new NpComboBoxListener(() -> {
+            NpDatasource datasource = NpDataBaseCache.getDatasource();
+
+            SqlExportDialog sqlExportDialog = SqlExportDialog.getInstance();
+            sqlExportDialog.setTitle("表定义导出");
+            sqlExportDialog.setVisible(true);
+
+
+            String filePath = sqlExportDialog.getFilePath();
+            if (null == filePath || filePath.isEmpty()) {
+                throw new NpException("输出目录不允许为空");
+            }
+
+            try (
+                    Connection connection = datasource.getDataSource().getConnection();
+                    Statement statement = connection.createStatement();
+            ) {
+
+                connection.setAutoCommit(true);
+
+                writeFile(statement, filePath, "schema_table");
+                writeFile(statement, filePath, "schema_column");
+                writeFile(statement, filePath, "schema_view");
+                writeFile(statement, filePath, "schema_param");
+
+            } catch (Exception ex) {
+
+                throw new NpException("导出失败", ex);
+            }
+
+
+            JOptionPane.showMessageDialog(NoRepeatApp.mainFrame, datasource.getName() + "：表定义导出成功", "提示",
+                    JOptionPane.INFORMATION_MESSAGE);
+        }));
 
         deleteButton.addActionListener(new ActionListener() {
             @Override
@@ -295,6 +344,41 @@ public class SettingForm {
             }
         });
     }
+
+    public void initData(Statement statement, String filePath, String table) {
+
+        try {
+            String fileContent = FileUtils.readFileToString(new File(filePath + File.separator + table + ".sql"));
+            String[] split = fileContent.split(";");
+            if (null == split || split.length == 0) {
+                throw new NpException("文件格式不正确：" + table);
+            }
+
+            statement.execute("delete from " + table);
+            for (String temp : split) {
+                statement.execute(temp);
+            }
+
+        } catch (IOException e) {
+            throw new NpException("未找到文件:" + table + ".sql", e);
+        } catch (SQLException e) {
+            throw new NpException("SQL执行错误:" + table, e);
+        }
+
+    }
+
+    public void writeFile(Statement statement, String filePath, String table) throws SQLException, IOException {
+        ResultSet resultSet = statement.executeQuery("select * from " + table);
+
+        StringBuilder fileContent = new StringBuilder();
+        while (resultSet.next()) {
+            String sql = SqlFile.mapRow(resultSet);
+            fileContent.append(sql).append("\n");
+        }
+        FileUtils.write(new File(filePath + File.separator + table + ".sql"), fileContent.toString());
+        resultSet.close();
+    }
+
 
     private void codeInit(List<SchemaTable> tables, Map<String, List<SchemaColumn>> columns) {
         setClassDefer(SchemaTable.class, "表定义", tables, columns);
