@@ -34,15 +34,21 @@ public class DatabaseVO {
     private String dbType;
 
     private DatabaseVO() {
-        dbType = "PostgreSQL";
+
     }
 
-    public static DatabaseVO getInstance(JTextField connectField,
+    public static DatabaseVO getInstance(JComboBox dbTypeText,
+                                         JTextField connectField,
                                          JTextField dbhostField,
                                          JTextField dbportField,
                                          JTextField dbnameField,
                                          JTextField dbuserField,
                                          JPasswordField dbpasswordField) {
+
+        Object selectItem = dbTypeText.getSelectedItem();
+        if(null == selectItem){
+            throw new NpException("请选择数据库类型");
+        }
 
         DatabaseVO databaseVO = new DatabaseVO();
         databaseVO.connectName = connectField.getText();
@@ -51,6 +57,7 @@ public class DatabaseVO {
         databaseVO.dbName = dbnameField.getText();
         databaseVO.dbUser = dbuserField.getText();
         databaseVO.dbPassword = String.valueOf(dbpasswordField.getPassword());
+        databaseVO.dbType = selectItem.toString();
 
         check(databaseVO);
 

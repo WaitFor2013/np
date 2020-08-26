@@ -7,11 +7,6 @@ import com.np.database.orm.connection.pool.PooledDataSource;
 import com.np.database.orm.connection.pool.PooledDataSourceFactory;
 import com.np.database.orm.session.DefaultSqlSession;
 import com.np.database.orm.session.SqlSession;
-import com.np.database.orm.biz.DbTypeEnum;
-import com.np.database.orm.connection.pool.PooledDataSource;
-import com.np.database.orm.connection.pool.PooledDataSourceFactory;
-import com.np.database.orm.session.DefaultSqlSession;
-import com.np.database.orm.session.SqlSession;
 
 import javax.sql.DataSource;
 import java.util.Properties;
@@ -34,7 +29,6 @@ public class NpDatasource {
         Properties properties = new Properties();
         switch (dbConfig.getDbTypeEnum()) {
             case POSTGRESQL:
-
                 if (null != dbConfig.getLog() && dbConfig.getLog()) {
                     properties.setProperty("driver", "net.sf.log4jdbc.DriverSpy");
                     properties.setProperty("url", String.format("jdbc:log4jdbc:postgresql://%s:%d/%s?loginTimeout=3&stringtype=unspecified", dbConfig.getIp(), dbConfig.getPort(), dbConfig.getDbName()));
@@ -48,6 +42,19 @@ public class NpDatasource {
                 properties.setProperty("poolPingEnabled", "true");
                 properties.setProperty("poolPingConnectionsNotUsedFor", "5000");
                 break;
+
+            case MYSQL:
+                if (null != dbConfig.getLog() && dbConfig.getLog()) {
+                    properties.setProperty("driver", "net.sf.log4jdbc.DriverSpy");
+                    properties.setProperty("url", String.format("jdbc:log4jdbc:mysql://%s:%d/%s?useUnicode=true&characterEncoding=utf-8", dbConfig.getIp(), dbConfig.getPort(), dbConfig.getDbName()));
+                } else {
+                    properties.setProperty("driver", "com.mysql.jdbc.Driver");
+                    properties.setProperty("url", String.format("jdbc:mysql://%s:%d/%s?useUnicode=true&characterEncoding=utf-8", dbConfig.getIp(), dbConfig.getPort(), dbConfig.getDbName()));
+                }
+                properties.setProperty("username", dbConfig.getUser());
+                properties.setProperty("password", dbConfig.getPassword());
+                break;
+
             default:
                 throw new NpDbException("NpDatasource not support " + dbConfig.getDbTypeEnum());
         }

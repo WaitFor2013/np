@@ -25,6 +25,12 @@
             <version>42.2.5</version>
         </dependency>
 
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>5.1.41</version>
+        </dependency>
+
         <!--START 基础组件-->
         <dependency>
             <groupId>org.apache.commons</groupId>

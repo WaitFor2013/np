@@ -1,8 +1,10 @@
 package com.np.design.ui.form;
 
-import com.alibaba.fastjson.JSON;import com.np.database.ColumnDefinition;
+import com.alibaba.fastjson.JSON;
+import com.np.database.ColumnDefinition;
 import com.np.database.NpDataType;
 import com.np.database.orm.NpDatasource;
+import com.np.database.orm.biz.DbTypeEnum;
 import com.np.database.orm.biz.param.BizParam;
 import com.np.database.orm.session.DefaultSqlSession;
 import com.np.design.NoRepeatApp;
@@ -20,6 +22,7 @@ import com.np.design.domain.misc.GridField;
 import com.np.design.domain.vo.DatabaseVO;
 import com.np.design.exception.ExceptionHandler;
 import com.np.design.exception.NpException;
+import com.np.design.ui.NpComboBoxModel;
 import com.np.design.ui.dialog.CommonTipsDialog;
 import com.np.design.ui.dialog.SqlExportDialog;
 import com.np.design.ui.listener.NpComboBoxListener;
@@ -41,10 +44,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 @Getter
@@ -63,12 +63,12 @@ public class SettingForm {
     private JPanel panel;
     private JPanel settingPanel;
     private JButton connectButton;
-    private JTextField dbType;
     private JLabel dbTypeLabel;
     private JButton envInitBtn;
     private JButton schemaPoBtn;
     private JButton loadFromOtherBtn;
     private JButton exportBtn;
+    private JComboBox dbTypeText;
 
     private static SettingForm settingForm;
 
@@ -162,8 +162,9 @@ public class SettingForm {
 
     private SettingForm() {
 
-        Object[] columnNames = {"连接名", "主机", "端口", "数据库", "用户名", "数据库类型"};
+        dbTypeText.setModel(new NpComboBoxModel(Arrays.asList(DbTypeEnum.POSTGRESQL.name(),DbTypeEnum.MYSQL.name(),DbTypeEnum.ORACLE.name())));
 
+        Object[] columnNames = {"连接名", "主机", "端口", "数据库", "用户名", "数据库类型"};
 
         DefaultTableModel model = new DefaultTableModel(NpDataBaseCache.getStoreDatabaseModel(), columnNames);
         dbtable.setModel(model);
@@ -174,7 +175,7 @@ public class SettingForm {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    DatabaseVO instance = DatabaseVO.getInstance(connectName,
+                    DatabaseVO instance = DatabaseVO.getInstance(dbTypeText,connectName,
                             dbhost,
                             dbport,
                             dbname,

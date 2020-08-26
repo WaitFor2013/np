@@ -187,7 +187,6 @@ public class PostgreSQLRender extends BaseRender implements BizSqlRender {
         //full text supported base on like
         fullText(isNeedAnd,bizParam,whereCauseSql,queryParams,valueMap,allParams);
 
-
         if (noWhereSql.contains(NpViewDefinition.WHERE_ANNOTATION)) {
             noWhereSql = noWhereSql.replace(NpViewDefinition.WHERE_ANNOTATION, whereCauseSql.toString());
         } else {

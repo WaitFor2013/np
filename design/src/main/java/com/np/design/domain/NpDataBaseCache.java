@@ -35,7 +35,15 @@ public class NpDataBaseCache {
             String dbJson = FileUtils.readFileToString(new File(DATABASES_STORE));
             List<DatabaseVO> databaseVOS = JSON.parseArray(dbJson, DatabaseVO.class);
             if (null != databaseVOS && !databaseVOS.isEmpty()) {
-                databaseVOS.forEach(databaseVO -> databaseCache.add(databaseVO));
+                databaseVOS.forEach(databaseVO -> {
+
+                    //向前兼容处理
+                    if("PostgreSQL".equals(databaseVO.getDbType())){
+                        databaseVO.setDbType(DbTypeEnum.POSTGRESQL.name());
+                    }
+
+                    databaseCache.add(databaseVO);
+                });
             }
         } catch (Exception e) {
             log.error("read db store failed.", e);
@@ -45,8 +53,8 @@ public class NpDataBaseCache {
         return getDatabaseModel(false);
     }
 
-    public static NpDatasource getDatasource(){
-        if(null == workDatabase){
+    public static NpDatasource getDatasource() {
+        if (null == workDatabase) {
             throw new NpException("工作环境未设置，请先设置工作环境");
         }
         return workDatabase;
@@ -56,8 +64,10 @@ public class NpDataBaseCache {
         DatabaseVO databaseVO = databaseCache.get(i);
 
         try {
+            DbTypeEnum dbTypeEnum = DbTypeEnum.getFromString(databaseVO.getDbType());
+
             NpDbConfig dbConfig = NpDbConfig.builder()
-                    .dbTypeEnum(DbTypeEnum.POSTGRESQL)
+                    .dbTypeEnum(dbTypeEnum)
                     .ip(databaseVO.getDbHost())
                     .port(Integer.parseInt(databaseVO.getDbPort()))
                     .dbName(databaseVO.getDbName())
