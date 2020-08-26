@@ -2,11 +2,7 @@ package com.np.database.orm.biz;
 
 import com.np.database.exception.NpDbException;
 import com.np.database.orm.SqlCommandType;
-import com.np.database.orm.biz.db.render.PostgreSQLRender;
-import com.np.database.orm.biz.param.BizParam;
-import com.np.database.orm.mapping.BoundSql;
-import com.np.database.orm.mapping.ColumnMapping;
-import com.np.database.orm.mapping.SqlSource;
+import com.np.database.orm.biz.db.render.MysqlRender;
 import com.np.database.orm.biz.db.render.PostgreSQLRender;
 import com.np.database.orm.biz.param.BizParam;
 import com.np.database.orm.mapping.BoundSql;
@@ -77,6 +73,9 @@ public class BizSqlSource implements SqlSource {
         switch (dbTypeEnum) {
             case POSTGRESQL:
                 sqlRender = PostgreSQLRender.INSTANCE;
+                break;
+            case MYSQL:
+                sqlRender = MysqlRender.INSTANCE;
                 break;
             default:
                 throw new NpDbException("BizSqlSource now just support POSTGRESQL");

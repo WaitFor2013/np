@@ -19,25 +19,19 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * postgreSQL render
+ * mysql render
  */
 @Slf4j
-public class PostgreSQLRender extends BaseRender implements BizSqlRender {
+public class MysqlRender extends BaseRender implements BizSqlRender {
 
-    private static final String BLACK_SPACE = " ";
-    private static final String AND = " and ";
-    private static final String OR = " or ";
-    private static final String VALUE_HOLDER_SPACE = " ? ";
-    private static final String SPLIT = ",";
-
-    private String dbVersion = "11.6";
+    private String dbVersion = "5.7";
 
     private SqlCommandType sqlCommandType;
 
-    private PostgreSQLRender() {
+    private MysqlRender() {
     }
 
-    public static final PostgreSQLRender INSTANCE = new PostgreSQLRender();
+    public static final MysqlRender INSTANCE = new MysqlRender();
 
     @Override
     public BoundSql renderQuery(String noWhereSql, Map<String, ColumnMapping> allParams, BizParam bizParam, boolean isCount) {
@@ -74,11 +68,12 @@ public class PostgreSQLRender extends BaseRender implements BizSqlRender {
                         checkValues(1, bizProperty, true);
                         //支持多个列查询
                         if (null != bizProperty.getHasColumns()) {
-                            hasColumnsDo(whereCauseSql,bizProperty,"=",allParams,queryParams,valueMap);
+                            hasColumnsDo(whereCauseSql, bizProperty, "=", allParams, queryParams, valueMap);
                         } else {
                             whereCauseSql.append(appendPrefix(parameterMapping));
                             whereCauseSql.append(BLACK_SPACE).append("=").append(VALUE_HOLDER_SPACE);
                         }
+
 
                         break;
                     case NEQ:
@@ -112,7 +107,7 @@ public class PostgreSQLRender extends BaseRender implements BizSqlRender {
                         likeValueRender(bizProperty);
 
                         if (null != bizProperty.getHasColumns()) {
-                            hasColumnsDo(whereCauseSql,bizProperty,"like",allParams,queryParams,valueMap);
+                            hasColumnsDo(whereCauseSql, bizProperty, "like", allParams, queryParams, valueMap);
                         } else {
                             whereCauseSql.append(appendPrefix(parameterMapping));
                             whereCauseSql.append(BLACK_SPACE).append("like").append(VALUE_HOLDER_SPACE);
@@ -129,8 +124,8 @@ public class PostgreSQLRender extends BaseRender implements BizSqlRender {
                         checkValues(2, bizProperty, true);
 
                         if (null != bizProperty.getHasColumns()) {
-                            hasColumnsDo(whereCauseSql,bizProperty,"between",allParams,queryParams,valueMap);
-                        }else {
+                            hasColumnsDo(whereCauseSql, bizProperty, "between", allParams, queryParams, valueMap);
+                        } else {
                             whereCauseSql.append(appendPrefix(parameterMapping));
                             whereCauseSql.append(BLACK_SPACE).append(" between").append(VALUE_HOLDER_SPACE).append(AND).append(VALUE_HOLDER_SPACE);
                         }
@@ -156,20 +151,6 @@ public class PostgreSQLRender extends BaseRender implements BizSqlRender {
                         appendHolder(whereCauseSql, bizProperty);
                         whereCauseSql.append(")");
                         break;
-                    case ARRAY_CONTAINS:
-                        checkValues(1, bizProperty, false);
-                        whereCauseSql.append(appendPrefix(parameterMapping))
-                                .append(BLACK_SPACE)
-                                .append(" @> ");
-                        appendHolder(whereCauseSql, bizProperty);
-                        break;
-                    case ARRAY_OVERLAP:
-                        checkValues(1, bizProperty, false);
-                        whereCauseSql.append(appendPrefix(parameterMapping))
-                                .append(BLACK_SPACE)
-                                .append(" && ");
-                        appendHolder(whereCauseSql, bizProperty);
-                        break;
 
                     default:
                         throw new NpDbException("unsupported OperatorToken " + bizProperty.getBizOperatorToken());
@@ -185,8 +166,7 @@ public class PostgreSQLRender extends BaseRender implements BizSqlRender {
         }
 
         //full text supported base on like
-        fullText(isNeedAnd,bizParam,whereCauseSql,queryParams,valueMap,allParams);
-
+        fullText(isNeedAnd, bizParam, whereCauseSql, queryParams, valueMap, allParams);
 
         if (noWhereSql.contains(NpViewDefinition.WHERE_ANNOTATION)) {
             noWhereSql = noWhereSql.replace(NpViewDefinition.WHERE_ANNOTATION, whereCauseSql.toString());
@@ -195,7 +175,7 @@ public class PostgreSQLRender extends BaseRender implements BizSqlRender {
         }
 
         if (isCount) {
-            noWhereSql = PagerUtils.count(noWhereSql, JdbcConstants.POSTGRESQL);
+            noWhereSql = PagerUtils.count(noWhereSql, JdbcConstants.MYSQL);
         }
         StringBuilder renderSql = new StringBuilder();
         renderSql.append(noWhereSql);
@@ -206,15 +186,13 @@ public class PostgreSQLRender extends BaseRender implements BizSqlRender {
         //limit support
         if (!isCount && null != bizParam.getOffset() && null != bizParam.getSize()) {
             //LIMIT 100 OFFSET 2
-            renderSql.append(" LIMIT ").append(bizParam.getSize())
-                    .append(" OFFSET ").append(bizParam.getOffset())
+            renderSql.append(" LIMIT ").append(bizParam.getOffset())
+                    .append(" , ").append(bizParam.getSize())
                     .append(BLACK_SPACE);
         }
 
 
         return new BoundSql(renderSql.toString(), queryParams, valueMap);
     }
-
-
 
 }
