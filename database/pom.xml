@@ -3,7 +3,7 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-    <groupId>com.etransfar.np</groupId>
+    <groupId>com.np</groupId>
     <artifactId>database</artifactId>
     <version>1.0.48</version>
 
@@ -72,5 +72,39 @@
         </dependency>
         <!--END 数据库&SQL处理-->
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>3.0.0</version>
+                <configuration>
+                    <attach>true</attach>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <distributionManagement>
+        <repository>
+            <id>nexus-releases</id>
+            <name>Internal Releases</name>
+            <url>http://115.159.124.39:8888/nexus/content/repositories/thirdparty/</url>
+        </repository>
+        <snapshotRepository>
+            <id>nexus-releases</id>
+            <name>Internal Releases</name>
+            <url>http://115.159.124.39:8888/nexus/content/repositories/thirdparty/</url>
+        </snapshotRepository>
+    </distributionManagement>
 
 </project>

@@ -2,19 +2,25 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <parent>
-        <artifactId>np</artifactId>
-        <groupId>com.etransfar.np</groupId>
-        <version>1.0.0</version>
-    </parent>
+
     <modelVersion>4.0.0</modelVersion>
 
+    <groupId>com.np</groupId>
     <artifactId>design</artifactId>
+    <version>1.0.0</version>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <java.version>1.8</java.version>
+    </properties>
 
     <dependencies>
 
         <dependency>
-            <groupId>com.etransfar.np</groupId>
+            <groupId>com.np</groupId>
             <artifactId>database</artifactId>
             <version>1.0.48</version>
         </dependency>
