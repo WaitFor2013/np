@@ -24,3 +24,4 @@ projectFilesBackup/
 */resource/rebel.xml
 ~*.doc*
 rebel.xml
+build/
