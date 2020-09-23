@@ -78,15 +78,7 @@ public class MysqlPoCodeGenerate {
 
 
         String className = toCamel(table.getTableName(), true) + PO;
-        stringBuilder.append("public class ").append(className).append(SPACE).append("implements NoRepeatPO").append(SPACE).append("{").append(RN);
-        stringBuilder.append(RN);
-
-        if (!table.getTableName().startsWith("schema")) {
-            stringBuilder.append(SPACE4).append("static {").append(RN);
-            stringBuilder.append(SPACE4).append(SPACE4).append("NpDefinition.registry(\"").append(table.getTableName()).append("\", ").append(className).append(".class)").append(FRN);
-            stringBuilder.append(SPACE4).append("}").append(RN);
-        }
-
+        stringBuilder.append("public class ").append(className).append(SPACE).append("").append(SPACE).append("{").append(RN);
         stringBuilder.append(RN);
 
         StringBuilder createCodeHelper = new StringBuilder();
